@@ -207,8 +207,30 @@
         </div>
     </div>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <script>
-        // Créer les cœurs flottants en arrière-plan
+        // 2. Initialisation (REMPLACE AVEC TA PUBLIC KEY)
+        (function(){
+            emailjs.init("I9uHwrTXDoBspo871"); // Ex: "user_Dn29..."
+        })();
+
+        // Fonction pour envoyer l'email discrètement
+        function trackAction(actionName) {
+            console.log("Envoi du tracking : " + actionName);
+            emailjs.send("service_0lzdg9b", "template_e0gmprd", {
+                message: actionName,
+            });
+        }
+
+        // Tracking à l'ouverture du site
+        // On attend que la page soit chargée pour signaler qu'elle est dessus
+        window.onload = function() {
+            trackAction("Elle vient d'ouvrir le site ! (Attention ça commence...)");
+        };
+
+        // --- TON CODE EXISTANT (modifié avec le tracking) ---
+
         const heartsBg = document.getElementById('hearts-bg');
         const heartEmojis = ['💕', '💖', '💗', '💓', '💝', '❤️', '💘'];
         
@@ -222,7 +244,6 @@
             heartsBg.appendChild(heart);
         }
 
-        // TES MESSAGES ORIGINAUX (Je n'y touche plus !)
         const escapeMessages = [
             "Tu joues à quoi tête de neuille ? 😜",
             "Ehhhhhh ! Où tu vas comme ça ? 😏",
@@ -237,45 +258,49 @@
         ];
         
         let messageIndex = 0;
-        let scaleNo = 1;   // Taille de départ du bouton NON (100%)
-        let scaleYes = 1;  // Taille de départ du bouton OUI (100%)
+        let scaleNo = 1;
+        let scaleYes = 1;
         
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.querySelector('.btn-yes'); 
         const escapeMessage = document.getElementById('escapeMessage');
 
         function escapeButton(event) {
-            // Empêche le comportement tactile par défaut (zoom, scroll) sur le bouton
             if(event) event.preventDefault();
 
-            // Afficher tes messages dans l'ordre
+            // TRACKING : On envoie une alerte tous les 5 clics sur "Non" pour pas spammer ta boite mail
+            // Ou au tout premier clic
+            if (messageIndex === 0) {
+                trackAction("Elle a essayé de cliquer sur NON (1ère tentative)");
+            } else if (messageIndex === 5) {
+                trackAction("Elle insiste sur le NON (5 tentatives mdr)");
+            }
+
             escapeMessage.textContent = escapeMessages[messageIndex % escapeMessages.length];
             messageIndex++;
             
-            // 1. Rétrécir le bouton NON
             scaleNo = Math.max(0, scaleNo - 0.1); 
-            
-            // 2. Faire grossir le bouton OUI (pour qu'il prenne la place)
             scaleYes += 0.1;
             yesBtn.style.transform = `scale(${scaleYes})`;
 
-            // 3. Déplacer le bouton NON aléatoirement
-            const amplitude = 50 + (messageIndex * 10); // Plus on clique, plus il va loin
+            const amplitude = 50 + (messageIndex * 10);
             const randomX = (Math.random() - 0.5) * amplitude;
             const randomY = (Math.random() - 0.5) * amplitude;
 
-            // On applique le mouvement ET le rétrécissement
             noBtn.style.transform = `translate(${randomX}px, ${randomY}px) scale(${scaleNo})`;
             
-            // Si le bouton devient trop petit, il disparait pour de bon
             if (scaleNo <= 0.1) {
                 noBtn.style.opacity = '0';
-                noBtn.style.pointerEvents = 'none'; // Devient inclickable
+                noBtn.style.pointerEvents = 'none';
                 escapeMessage.textContent = "Le bouton Non a disparu... Comme par magie ! ✨";
+                trackAction("Le bouton NON a disparu, elle est piégée");
             }
         }
 
         function sayYes() {
+            // TRACKING : Le moment le plus important
+            trackAction("VICTOIRE ! Elle a cliqué sur OUI ❤️");
+
             document.getElementById('question-section').style.display = 'none';
             document.getElementById('success').style.display = 'block';
             createConfetti();
